@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css">
+    <link rel="stylesheet" href="css/jqm-demos.css">
+    <link rel="stylesheet" href="css/swiper.min.css">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,700">
+    <script src="js/jquery.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <style>
+    #bg img{ 
+      position: fixed;
+      //z-index: -1;
+      opacity: 0.6;
+      height: 100%;
+      width: 100%;
+      margin-top: -50px;
+      margin-left: -16px;
+    }
+    p:first-letter{
+               text-transform: uppercase;
+          }
+    p{
+      border-radius: 3px;
+      text-align: justify;
+      padding:8px;
+      background-color: white;
+      opacity: 0.8;
+      padding: 5px;
+      margin-top: 3px;
+      margin-left: -10px;
+      color: #424242;
+      font-family: "proxima-nova-1","proxima-nova-2",arial,helvetica,sans-serif
+    }
+    </style>
+    <style>
+     .ui-input-text{
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .jelly-form input[type="text"]{
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: 2px solid #0099CC;
+       
+      box-sizing: border-box;
+      outline: none;
+       
+      font-size: 0.8em;
+      padding: 0.2em 0.2em;
+      width: 100%;
+      border-radius: 0;
+    }
+    .jelly-form{
+      position: relative;
+    }
+    .jelly-form:before, .jelly-form:after{
+      content:'';
+      display: block;
+       
+      position: absolute;
+      bottom: 2px;
+       
+      height: 6px;
+      border-left: 2px solid #0099CC;
+    }
+    .jelly-form:before{
+      left: 0;
+    }
+    .jelly-form:after{
+      right: 0;
+    }
+    .swiper-container {
+        width: 100%;
+        height: 100%;
+        
+    }
+    .swiper-slide {
+        text-align: center;
+        font-size: 18px;
+        background: #fff;
+        
+        /* Center slide text vertically */
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        -webkit-justify-content: center;
+        justify-content: center;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+    }
+    </style>
+</head>
+<body>
+<div data-role="page" class="jqm-demos jqm-demos-index jqm-demos-search-results">
+    <div  data-role="header" class="jqm-header" data-position="fixed" style="box-shadow: 5px 5px 20px;border-bottom-width: thin;background-color: darkcyan;border-top: 0px;z-index:100">
+        <a href="#" onClick="showDivs()" data-role="button" data-icon="home" data-iconpos="notext" data-theme="a" data-inline="true" class="ui-link ui-btn ui-btn-a ui-icon-home ui-btn-icon-notext ui-btn-inline ui-shadow ui-corner-all" role="button"></a>
+        <h2 style="margin-bottom:5px">
+        <b style="color: whitesmoke;font-size:x-large;" onClick="showDivs()">mPlotter</b></h2>
+        <a href="#" id="start" data-role="button" data-icon="audio" data-iconpos="notext" data-theme="a" data-inline="true" class="ui-btn-icon-notext ui-icon-audio" role="button"></a>
+        
+        
+    </div><!-- /header -->
+    
+    <div role="main" class="ui-content jqm-content" style="width:94%">
+        <div id="bg"></div>
+        <div id="_showResults" style="margin-top:-30px">
+        </div>
+        <div class="jelly-form" style="margin-left:-10px">
+            <input type="text" id="searchterm" placeholder="Search Movie!" value="" style="border-top: none;border-left: none;border-right: none;border-bottom: 2px solid #0099CC;box-sizing: border-box;outline: none;font-size: 1.2em;padding: 0.6em 0.6em;width: 100%;border-radius:0"/>
+        </div>
+         <ul id="results" class="jqm-list jqm-search-results-list ui-listview ui-listview-inset ui-corner-all ui-shadow" style="margin-left:-10px"></ul>
+
+    </div><!-- /panel -->
+</div><!-- /page -->
+
+<script type="text/javascript">
+
+function showDivs()
+{
+    $("#searchterm").show();
+    $("#searchterm").val("");
+    $("#results").show();
+    $("#results").empty();
+    $("#_showResults").empty();
+    $("#_showResults").hide();
+    $("#wikiImage").remove();
+    $("#speakFlag").text("0");
+    $("#wikiImageFg").remove();
+    
+}
+
+  $("#searchterm").keyup(function(e){
+    q = $("#searchterm").val().concat(" film");
+    $.getJSON("http://en.wikipedia.org/w/api.php?callback=?",
+    {
+      srsearch: q,
+      action: "query",
+      list: "search",
+      format: "json"
+    },
+    function(data) {
+      $("#results").empty();
+      //$("#results").append("Results for <b>" + q + "</b>");
+      $.each(data.query.search, function(i,item){
+        //console.log(item.snippet);
+         if(item.snippet.indexOf("film")>=0 || item.snippet.indexOf(q)>=0){
+        $("#results").append("<li id='http://en.wikipedia.org/wiki/" + encodeURIComponent(item.title) + "' onclick='getPlot(this.id)' class><a href='#' data-ajax='false' class='ui-btn' ><span>" + item.title + "</a></span></li>");}  
+    });
+    });
+});
+function getPlot(wikiUrl)
+{
+    var pageName = wikiUrl.toString().split("http://en.wikipedia.org/wiki/");
+    $.ajax({
+        type: "GET",    
+        url: "http://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&section=1&page="+pageName[1]+"&callback=?",
+        //url : "file:///E:/Project/APP/Movie%20Search/Tanu%20Weds%20Manu%20Returns%20-%20Wikipedia,%20the%20free%20encyclopedia.html",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        dataType: "json",
+        success: function (data, textStatus, jqXHR) {
+            var markup = data.parse.text["*"];
+            var blurb = $('<div></div>').html(markup);
+            // remove links as they will not work
+            blurb.find('a').each(function() { $(this).replaceWith($(this).html()); });
+            blurb.find('img').each(function() { $(this).replaceWith($(this).html()); });
+            // remove any references
+            blurb.find('sup').remove();
+            // remove cite error
+            blurb.find('.mw-ext-cite-error').remove();
+            //console.log($(blurb).find("#Plot").siblings("p"));
+            $("#results").empty();
+            $("#results").hide();
+            $("#searchterm").empty();
+            $("#searchterm").hide();
+            $("#_showResults").show();
+            if($(blurb).find("p").text()){
+            $("#_showResults").append($(blurb).find("p"));
+
+            //GetRating();
+            getImage(pageName);}
+        },
+        error: function (errorMessage) {
+        }
+    });
+}
+function getImage(pageName)
+{
+ $.ajax({
+        type: "GET",
+        url: "http://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&section=0&page="+pageName[1]+"&callback=?",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        dataType: "json",
+        success: function (data, textStatus, jqXHR) {
+ 
+       
+            var markup = data.parse.text["*"];
+         
+            var blurb = $('<div></div>').html(markup);
+         
+            // remove links as they will not work
+            blurb.find('a').each(function() { $(this).replaceWith($(this).html()); });
+ 
+            // remove any references
+            blurb.find('sup').remove();
+ 
+            // remove cite error
+            blurb.find('.mw-ext-cite-error').remove();
+        var id= $(blurb).find('img').attr("src").replace("//","https://");
+        $('#bg').append('<img src="'+ id +'" alt="" id="wikiImage"/>');
+        $("#_showResults").find("p:first").prepend('<img src="'+ id +'" alt="" id="wikiImageFg" style="float: right;width: 43%;height: 198px;padding: 4px;border-radius: 8px;box-shadow: 3px 8px 4px;"/>');
+        },
+        error: function (errorMessage) {
+        }
+    });
+}
+$("body").append("<p id='speakFlag' style='display:none'>0</p>");
+$("#start").click(function () {
+    if($("#speakFlag").text() == 0){
+        var input = $("p").text();
+        $("#speakFlag").text("1");
+        $("body").append("<audio id='speach' autoplay><source src=http://tts-api.com/tts.mp3?q=" + escape(input) + " type=audio/mpeg></audio><p id='speachContent' style='display:none'>\"" + input + "\"</p>");
+        
+    }
+    else
+    {
+        $("#speach").remove(); 
+        $("#speachContent").remove();
+        $("#speakFlag").text("0");
+    }
+    
+})
+   
+</script>
+</body>
+</html>
